@@ -4,10 +4,10 @@ class SymTable:
         self.__table = [[] for _ in range(101)]
 
     def find_hash(self, value):
-        sum = 0
+        sum_ = 0
         for c in value:
-            sum += ord(c)
-        return sum % self.__dimension
+            sum_ += ord(c)
+        return sum_ % self.__dimension
 
     def add(self, variable):
         hash_position = self.find_hash(variable)
@@ -28,14 +28,17 @@ class SymTable:
 
 def testSymTable(table):
     option = 0
-    while option != 3:
-        print("1.Add value\n2.Display symbol table\n3.Exit\n")
+    while option != 4:
+        print("1.Add value\n2.Remove value\n3.Display symbol table\n3.Exit\n")
         option = int(input("option="))
 
         if option == 1:
             v = input("value=")
             table.add(v)
         elif option == 2:
+            v = input("value=")
+            table.remove(v)
+        elif option == 3:
             table.display_sym_table()
 
 
