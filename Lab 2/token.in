@@ -1,0 +1,4 @@
+﻿operators =+|-|*|/|=|<|<=|==|>=|>|!=
+separators =[ | ] | ( | ) : | space
+keywords = var |const |char |string |int |real |while |for| do| if| then| else| begin| end |read |print
+
