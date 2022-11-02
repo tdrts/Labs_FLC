@@ -14,7 +14,7 @@ class SymTable:
     def find_pos_in_chain(self, value):
         hash_position = self.find_hash(value)
 
-        return self.__table[hash_position].index(value)
+        return [hash_position, self.__table[hash_position].index(value)]
 
     def add(self, variable):
         hash_position = self.find_hash(variable)
@@ -53,44 +53,63 @@ def scan_p1(tokens):
     sti = SymTable()
     stc = SymTable()
 
-    s = ""
+    tokens_string = ""
     for x in tokens:
-        s = s + x + ' '
+        tokens_string = tokens_string + x + ' '
 
-    s = s + '\n'
-    print(s)
-    for i in re.split(s,line):
-        print(i)
-
-
+    print(tokens_string)
 
     while line:
-
-
-
         for x in line.split():
             if x in tokens:
-                pif.append([x,-1])
+                pif.append([x, -1])
             else:
                 if x.isnumeric():
                     stc.add(x)
-                    #function to find code in pif
                     pif.append([x, stc.find_pos_in_chain(x)])
                 else:
-                    sti.add(x)
-                    pif.append([x, sti.find_pos_in_chain(x)])
-                    #print(x)
+                    if re.search(r"^[^\d\W]\w*\Z", x):
+                        sti.add(x)
+                        pif.append([x, sti.find_pos_in_chain(x)])
+                    else:
+                        print(x+"\t\tNOT id")
+
+                    first_paranthesis = x.find('(')
+                    second_paranthesis = x.find(')')
+
+                    if first_paranthesis != -1:
+                        pif.append([x[first_paranthesis], -1])
+                        if second_paranthesis != -1:
+                            new_token = x[first_paranthesis+1:second_paranthesis]
+                            if re.search(r"^[^\d\W]\w*\Z", new_token):
+                                sti.add(x)
+                                pif.append([x, sti.find_pos_in_chain(x)])
+                            for ch in range(len(new_token)):
+                                #catch operators like == <= >= !=
+                                if x[ch] == '!' or x[ch] == '<' or x[ch] == '>' or x[ch] == '=':
+                                    if ch+1 < len(x):
+                                        if x[ch+1] == '=':
+                                            new_st = ""
+                                            new_st += x[ch]
+                                            new_st += x[ch+1]
+                                            pif.append([new_st, -1])
+
+                            pif.append([x[second_paranthesis],-1])
 
         line = f.readline()
 
     write_in_file(pif, "PIF.out")
+    print("\nSym Table Const is ")
+    stc.display_sym_table()
+    print("\nSym Table Id is ")
+    sti.display_sym_table()
     return tokens
 
 
 def write_in_file(data, file_name):
     f = open(file_name, "w")
     for tpl in data:
-        to_write = tpl[0] + "\t" + str(tpl[1]) + "\n"
+        to_write = tpl[0] + "\t\t\t" + str(tpl[1]) + "\n"
         f.write(to_write)
     f.close()
 
@@ -98,6 +117,5 @@ def write_in_file(data, file_name):
 def main():
     tokens = read_tokens()
     scan_p1(tokens)
-
 
 main()
