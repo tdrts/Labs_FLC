@@ -1,0 +1,16 @@
+var arr : int[]
+var k : int
+
+var n : int
+read(n)
+
+for (k = 0 ; k < n ; k = k + 1) do
+	read(arr[k])
+
+var max : int
+max = arr[0]
+for (k = 1 ; k < n ; k = k + 1) do
+	if (arr[k] > max) then
+		max = arr[k]
+
+print(max)

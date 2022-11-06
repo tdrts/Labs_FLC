@@ -32,82 +32,161 @@ class SymTable:
             for j in self.__table[i]:
                 print(j)
 
+    def get_sym_table_data(self):
+        data = []
+        for i in range(self.__dimension):
+            for j in self.__table[i]:
+                data.append(j)
 
-def read_tokens():
-    f = open("token.in", mode='r', encoding='utf-8-sig')
-    line = f.readline()
-    tokens = []
+        return data
 
-    while line:
-        tokens.append(line.split()[0])
+
+class Scanner:
+    def __init__(self):
+        self.id_sym_table = SymTable()
+        self.const_sym_table = SymTable()
+        self.pif = []
+        self.separators = []
+        self.operators = []
+        self.res_words = []
+
+    def classify_tokens(self):
+        line_number = 0
+        f = open("token.in", mode='r', encoding='utf-8-sig')
         line = f.readline()
 
-    return tokens
-
-
-def scan_p1(tokens):
-    f = open("p1.txt", mode='r', encoding='utf-8-sig')
-    line = f.readline()
-
-    pif = []
-    sti = SymTable()
-    stc = SymTable()
-
-    tokens_string = ""
-    for x in tokens:
-        tokens_string = tokens_string + x + ' '
-
-    print(tokens_string)
-
-    while line:
-        for x in line.split():
-            if x in tokens:
-                pif.append([x, -1])
+        while line:
+            line = line.replace('\n', '')
+            if line_number < 9:
+                self.separators.append(line)
+            elif line_number < 22:
+                self.operators.append(line)
             else:
-                if x.isnumeric():
-                    stc.add(x)
-                    pif.append([x, stc.find_pos_in_chain(x)])
+                self.res_words.append(line)
+            line_number += 1
+
+            line = f.readline()
+
+        if " " not in self.separators:
+            self.separators.append(" ")
+
+    def print_tokens(self):
+        print(self.separators)
+        print(self.operators)
+        print(self.res_words)
+        print()
+
+    def tokenize(self, line):
+        index = 0
+        tokens = []
+        token = ''
+
+        line = line.replace("\t", "")
+        line = line.replace("\n", "")
+
+        while index < len(line):
+            #getting operators with 1 or 2 chars
+            if line[index] in self.operators:
+                if token:
+                    tokens.append(token)
+                if index + 1 < len(line) and line[index:index + 2] in self.operators:
+                    tokens.append(line[index:index + 2])
+                    index += 2
                 else:
-                    if re.search(r"^[^\d\W]\w*\Z", x):
-                        sti.add(x)
-                        pif.append([x, sti.find_pos_in_chain(x)])
+                    tokens.append(line[index])
+                    index += 1
+                token = ''
+            #getting strings
+            elif line[index] == '\"':
+                if token:
+                    tokens.append(token)
+                new_str = ""
+                end = 0
+                index += 1
+                while index < len(line) and end == 0:
+                    if line[index] == "\"":
+                        end = index
                     else:
-                        print(x+"\t\tNOT id")
+                        new_str += line[index]
+                    index += 1
 
-                    first_paranthesis = x.find('(')
-                    second_paranthesis = x.find(')')
+                if end != 0:
+                    new_str = "\"" + new_str + "\""
+                else:
+                    new_str = "\"" + new_str
 
-                    if first_paranthesis != -1:
-                        pif.append([x[first_paranthesis], -1])
-                        if second_paranthesis != -1:
-                            new_token = x[first_paranthesis+1:second_paranthesis]
-                            if re.search(r"^[^\d\W]\w*\Z", new_token):
-                                sti.add(x)
-                                pif.append([x, sti.find_pos_in_chain(x)])
-                            for ch in range(len(new_token)):
-                                #catch operators like == <= >= !=
-                                if x[ch] == '!' or x[ch] == '<' or x[ch] == '>' or x[ch] == '=':
-                                    if ch+1 < len(x):
-                                        if x[ch+1] == '=':
-                                            new_st = ""
-                                            new_st += x[ch]
-                                            new_st += x[ch+1]
-                                            pif.append([new_st, -1])
+                tokens.append(new_str)
+                token = ''
+            #getting separators
+            elif line[index] in self.separators or line == 'begin' or line == 'end':
+                if token:
+                    tokens.append(token)
+                    token = ''
+                if line == "begin":
+                    tokens.append("begin")
+                    index += 5
+                elif line == "end":
+                    tokens.append("end")
+                    index += 3
+                else:
+                    tokens.append(line[index])
+                    token = ''
+                    index += 1
+            else:
+                token += line[index]
+                index += 1
 
-                            pif.append([x[second_paranthesis],-1])
+        if token:
+            tokens.append(token)
 
+        tokens = list(filter(" ".__ne__, tokens))
+        return tokens
+
+    def scan_file(self, filename):
+        f = open(filename, mode='r', encoding='utf-8-sig')
         line = f.readline()
+        line_number = 1
+        ok = 0
+        while line:
+            tokens = self.tokenize(line)
+            if len(tokens) > 0:
+                for token in tokens:
+                    if token in self.separators or token in self.operators or token in self.res_words:
+                        self.pif.append([token, -1])
+                    else:
+                        #print(token)
+                        if re.match(r"^0|[+-]?[1-9][0-9]*\.?[0-9]*$", token) or (token[0] == "\"" and token[-1] == "\""):
+                            self.const_sym_table.add(token)
+                            self.pif.append(["const", self.const_sym_table.find_pos_in_chain(token)])
+                        elif re.search(r"^[a-zA-Z]([a-zA-Z]|[0-9])*$", token):
+                            self.id_sym_table.add(token)
+                            self.pif.append(["id", self.id_sym_table.find_pos_in_chain(token)])
+                        else:
+                            print("lexical error on line "+str(line_number) + " at token " + token)
+                            ok = 1
+            line_number += 1
+            line = f.readline()
 
-    write_in_file(pif, "PIF.out")
-    print("\nSym Table Const is ")
-    stc.display_sym_table()
-    print("\nSym Table Id is ")
-    sti.display_sym_table()
-    return tokens
+        if ok == 0:
+            print("lexically correct")
+        write_pif_in_file(self.pif)
+        write_sym_table_in_file(self.const_sym_table.get_sym_table_data(), self.id_sym_table.get_sym_table_data())
 
 
-def write_in_file(data, file_name):
-    f = open(file_name, "w")
+def write_sym_table_in_file(consts, ids):
+    f = open("sym_table_const.out", "w")
+    for x in consts:
+        f.write(x+"\n")
+    f.close()
+
+    g = open("sym_table_ids.out", "w")
+    for x in ids:
+        g.write(x+"\n")
+    g.close()
+
+
+def write_pif_in_file(data):
+    f = open("pif.out", "w")
     for tpl in data:
         to_write = tpl[0] + "\t\t\t" + str(tpl[1]) + "\n"
         f.write(to_write)
@@ -115,7 +194,10 @@ def write_in_file(data, file_name):
 
 
 def main():
-    tokens = read_tokens()
-    scan_p1(tokens)
+    my_scanner = Scanner()
+    my_scanner.classify_tokens()
+    my_scanner.print_tokens()
+    my_scanner.scan_file("p1.txt")
+
 
 main()

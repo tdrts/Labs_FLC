@@ -1,0 +1,28 @@
+var a : int
+var b : int
+var c : int
+read(a)
+read(b)
+read(c)
+
+var delta : int
+delta = b*b - 4*a*c
+
+if (delta < 0) then
+	print("no_real_solution")
+else
+	if (delta == 0)
+	    begin
+		    print("the_solution_is")
+		    print(-b/2*a)
+		end
+	else
+		begin
+			var s1 : real
+			var s2 : real
+			s1 = (-b + sqrt(delta) ) / (2*a)
+			s2 = (-b - sqrt(delta) ) / ( 2*a)
+			print("the_solutions_are")
+			print(s1)
+			print(s2)
+		end

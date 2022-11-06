@@ -1,20 +1,21 @@
-var a : int
-var b : int
+var 1a : int
+var b: int
 read (a)
 read (b)
 
 var gcd : int = 0
 
-if (a * b==0) then
+if ( a*b == 0) then
 	gcd = a+b
 else
 	begin
-		while (a!=b) do
+		while (a != b) do
 			if (a > b) then
 				a = a - b
 			else
 				b = b - a
 		gcd = a
 	end
-print("gcd=")
+
+print("gcd=)
 print(gcd)
