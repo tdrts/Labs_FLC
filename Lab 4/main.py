@@ -43,12 +43,12 @@ class SymTable:
 
 class Scanner:
     def __init__(self):
-        self.id_sym_table = SymTable()
-        self.const_sym_table = SymTable()
-        self.pif = []
-        self.separators = []
-        self.operators = []
-        self.res_words = []
+        self.__id_sym_table = SymTable()
+        self.__const_sym_table = SymTable()
+        self.__pif = []
+        self.__separators = []
+        self.__operators = []
+        self.__res_words = []
 
     def classify_tokens(self):
         line_number = 0
@@ -58,22 +58,22 @@ class Scanner:
         while line:
             line = line.replace('\n', '')
             if line_number < 9:
-                self.separators.append(line)
+                self.__separators.append(line)
             elif line_number < 22:
-                self.operators.append(line)
+                self.__operators.append(line)
             else:
-                self.res_words.append(line)
+                self.__res_words.append(line)
             line_number += 1
 
             line = f.readline()
 
-        if " " not in self.separators:
-            self.separators.append(" ")
+        if " " not in self.__separators:
+            self.__separators.append(" ")
 
     def print_tokens(self):
-        print(self.separators)
-        print(self.operators)
-        print(self.res_words)
+        print(self.__separators)
+        print(self.__operators)
+        print(self.__res_words)
         print()
 
     def tokenize(self, line):
@@ -86,10 +86,10 @@ class Scanner:
 
         while index < len(line):
             #getting operators with 1 or 2 chars
-            if line[index] in self.operators:
+            if line[index] in self.__operators:
                 if token:
                     tokens.append(token)
-                if index + 1 < len(line) and line[index:index + 2] in self.operators:
+                if index + 1 < len(line) and line[index:index + 2] in self.__operators:
                     tokens.append(line[index:index + 2])
                     index += 2
                 else:
@@ -118,7 +118,7 @@ class Scanner:
                 tokens.append(new_str)
                 token = ''
             #getting separators
-            elif line[index] in self.separators or line == 'begin' or line == 'end':
+            elif line[index] in self.__separators or line == 'begin' or line == 'end':
                 if token:
                     tokens.append(token)
                     token = ''
@@ -151,16 +151,16 @@ class Scanner:
             tokens = self.tokenize(line)
             if len(tokens) > 0:
                 for token in tokens:
-                    if token in self.separators or token in self.operators or token in self.res_words:
-                        self.pif.append([token, -1])
+                    if token in self.__separators or token in self.__operators or token in self.__res_words:
+                        self.__pif.append([token, -1])
                     else:
                         #print(token)
                         if re.match(r"^0|[+-]?[1-9][0-9]*\.?[0-9]*$", token) or (token[0] == "\"" and token[-1] == "\""):
-                            self.const_sym_table.add(token)
-                            self.pif.append(["const", self.const_sym_table.find_pos_in_chain(token)])
+                            self.__const_sym_table.add(token)
+                            self.__pif.append(["const", self.__const_sym_table.find_pos_in_chain(token)])
                         elif re.search(r"^[a-zA-Z]([a-zA-Z]|[0-9])*$", token):
-                            self.id_sym_table.add(token)
-                            self.pif.append(["id", self.id_sym_table.find_pos_in_chain(token)])
+                            self.__id_sym_table.add(token)
+                            self.__pif.append(["id", self.__id_sym_table.find_pos_in_chain(token)])
                         else:
                             print("lexical error on line "+str(line_number) + " at token " + token)
                             ok = 1
@@ -169,8 +169,8 @@ class Scanner:
 
         if ok == 0:
             print("lexically correct")
-        write_pif_in_file(self.pif)
-        write_sym_table_in_file(self.const_sym_table.get_sym_table_data(), self.id_sym_table.get_sym_table_data())
+        write_pif_in_file(self.__pif)
+        write_sym_table_in_file(self.__const_sym_table.get_sym_table_data(), self.__id_sym_table.get_sym_table_data())
 
 
 def write_sym_table_in_file(consts, ids):
@@ -197,7 +197,7 @@ def main():
     my_scanner = Scanner()
     my_scanner.classify_tokens()
     my_scanner.print_tokens()
-    my_scanner.scan_file("p1.txt")
+    my_scanner.scan_file("p3.txt")
 
 
 main()
