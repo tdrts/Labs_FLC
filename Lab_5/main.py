@@ -16,13 +16,13 @@ class FA:
         self.states = []
         self.alphabet = []
         self.initial = ""
-        self.final = ""
+        self.final = []
         self.transitions = []
 
     def read_elements(self, filename):
         f = open(filename, mode='r', encoding='utf-8-sig')
         line = f.readline()
-        #get states
+        # get states
         states_line = line.split()
         for x in states_line:
             self.states.append(x)
@@ -33,17 +33,25 @@ class FA:
         for x in alphabet_line:
             self.alphabet.append(x)
 
+        # get initial
         self.initial = f.readline().strip()
-        self.final = f.readline().strip()
 
+        # get final states
+        line = f.readline()
+        final_line = line.split()
+        for x in final_line:
+            self.final.append(x)
+
+        # get transitions
         line = f.readline()
         while line:
-            transition_elems = line.strip().split(',')
-            self.transitions.append(Transitions(transition_elems[0],transition_elems[1],transition_elems[2]))
+            transition_elms = line.strip().split(',')
+            self.transitions.append(Transitions(transition_elms[0], transition_elms[1], transition_elms[2]))
             line = f.readline()
 
     def print_menu(self):
-        print("What do you want to see?\na) set of states\nb) alphabet\nc) initial state\nd) final states\ne) set of transitions\nx) exit\n")
+        print("What do you want to see?\na) set of states\nb) alphabet\nc) initial state\nd) final states\ne) set of "
+              "transitions\nx) exit\n")
         opt = input(">")
         while opt != 'x':
             if opt == 'a':
