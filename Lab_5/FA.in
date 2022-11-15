@@ -1,7 +1,7 @@
 p q r
 0 1
 p
-r q
+q
 p,q,0
-p,r,1
+r,q,1
 q,r,0

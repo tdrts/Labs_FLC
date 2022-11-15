@@ -1,6 +1,3 @@
-from typing import List, Union, Any
-
-
 class Transitions:
     def __init__(self, first, second, value):
         self.first = first
@@ -48,10 +45,11 @@ class FA:
             transition_elms = line.strip().split(',')
             self.transitions.append(Transitions(transition_elms[0], transition_elms[1], transition_elms[2]))
             line = f.readline()
+        f.close()
 
     def print_menu(self):
         print("What do you want to see?\na) set of states\nb) alphabet\nc) initial state\nd) final states\ne) set of "
-              "transitions\nx) exit\n")
+              "transitions\nf) test sequence\nx) exit\n")
         opt = input(">")
         while opt != 'x':
             if opt == 'a':
@@ -65,11 +63,49 @@ class FA:
             if opt == 'e':
                 for one in self.transitions:
                     print(one)
+            if opt == 'f':
+                print(self.check_sequence(input("seq=")))
             opt = input(">")
+
+    def check_if_dfa(self):
+        list_counters = []
+        for x in self.transitions:
+            counter = -1
+            for y in self.transitions:
+                if x.first == y.first and x.value == y.value:
+                    counter += 1
+            list_counters.append(counter)
+
+        ok = True
+        for x in list_counters:
+            if x > 0:
+                ok = False
+
+        return ok
+
+    def check_sequence(self, sequence):
+        if self.check_if_dfa():
+            current = self.initial
+            for one in sequence:
+                ok = True
+                for x in self.transitions:
+                    if x.first == current and x.value == one:
+                        current = x.second
+                        ok = False
+                        break
+                if ok:
+                    return False
+            if current in self.final:
+                return True
+            else:
+                return False
+        else:
+            return False
 
 
 fa = FA()
 fa.read_elements("FA.in")
+# print(fa.check_sequence("001")) #true
+# print(fa.check_sequence("01")) #false, doesn't exist
 fa.print_menu()
-
 
